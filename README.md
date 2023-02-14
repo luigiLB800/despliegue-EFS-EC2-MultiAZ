@@ -9,29 +9,28 @@ La arquitectura de EFS-EC2-MultiAZ en AWS está diseñada para proporcionar un a
 
 ## Creación EFS+EC2
 
-1- Crearemos el grupo de seguridad de las maquinas ec2, en estas tendremos que abrir los puertos para http y shh para todo el mundo (posteriormente se explicara como securizar el despliegue). Posteriormente crearemos el grupo de seguridad para el sistema efs, en este abriremos el puerto para nfs pero solo para el grupo de seguridad antes creado
+1- Crearemos el grupo de seguridad de las máquinas ec2, en estas tendremos que abrir los puertos para http y ssh para todo el mundo (posteriormente se explicara cómo securizar el despliegue). Posteriormente crearemos el grupo de seguridad para el sistema efs, en este abriremos el puerto para nfs pero solo para el grupo de seguridad antes creado
 
-2- A continuacion procedemos a lanzar las instancias ec2, lanzaremos dos 3 instancias con la siguiente configuracion: cmo sistema operativousaremos amazon linux, par de claves vockey, asignaremos una subred para cada maquina por ejemplo la a y la b, seleccionamos el grupo de seguridad antes creado y por ultimo pondremos lo siguiente en user data:  
-
+2- A continuación procedemos a lanzar las instancias ec2, lanzaremos dos 3 instancias con la siguiente configuración: como sistema operativo usaremos amazon linux, par de claves vokey, asignaremos una subred para cada máquina por ejemplo la a y la b, seleccionamos el grupo de seguridad antes creado y por último pondremos lo siguiente en user data:
 ![captura](userdata.PNG)
 
-3- Ahora crearemos el sistema EFS para ello le pondremos un nombre y usaremos la VPC por defcto y la "storage class" standard. Una vez se haya creado nuestro sistema EFS cambiaremos los grupos de que vendran asignados por defecto por el que creamos en el primer paso y ya terminariamos con este apartado
+3- Ahora crearemos el sistema EFS para ello le pondremos un nombre y usaremos la VPC por defecto y la "storage class" standard. Una vez se haya creado nuestro sistema EFS cambiaremos los grupos de que vendrán asignados por defecto por el que creamos en el primer paso y ya terminamos con este apartado
 
-4- Una vez ya tenemos todo creado debemos conectarnos a las maquinas y configurarlas, para ello primero comprobaremos que el servicio http este funcionando correctamente, tras esto crearemos el directorio efs-mount en /var/www/html y montaremos el sistema efs sobre esa carpeta usando  
+4- Una vez ya tenemos todo creado debemos conectarnos a las máquinas y configurarlas, para ello primero comprobaremos que el servicio http este funcionando correctamente, tras esto crearemos el directorio efs-mount en /var/www/html y montaremos el sistema efs sobre esa carpeta usando  
 sudo mount -t nfs -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport tuefs.efs.us-east-1.amazonaws.com:/ efs-mount  
-Tras esto nos descargaremos los ficheros de nuestra pagina web y repetiremos los pasos anteriores menos este ultimo en las otras maquinas, esto ya que al haber montado ya el sistema efs cada maquina que montemos con este se sincronizara y obtendra los ficheros o cambios que se hayan realizado.   
+Tras esto nos descargaremos los ficheros de nuestra página web y repetiremos los pasos anteriores menos este último en las otras máquinas, esto ya que al haber montado ya el sistema efs cada máquina que montemos con este se sincronizará y obtendrá los ficheros o cambios que se hayan realizado.   
 
-5- Una vez hecho esto modificaremos el documennt root de httpd a la carpeta que acabamos de montar para ello abrimos el archivo "/etc/httpd/conf/httpd.conf" y modificaremos la linea DocumentRoot quedando asi:  
+5- Una vez hecho esto modificaremos el documennt root de httpd a la carpeta que acabamos de montar para ello abrimos el archivo "/etc/httpd/conf/httpd.conf" y modificamos la línea DocumentRoot quedando asi:  
 - DocumentRoot "/var/www/html/efs-mount" 
  
-Tras esto nos iremos al archivo "/etc/fstab" y añadimos la siguiente linea para que no se nos desmonte el directorio al reiniciar las maquinas:  
+Tras esto nos iremos al archivo "/etc/fstab" y añadimos la siguiente línea para que no se nos desmonte el directorio al reiniciar las máquinas:  
 
 - tuEFS.efs.us-east-1.amazonaws.com:/  /var/www/html/efs-mount nfs defaults 0 0
 ## Creación Balanceador de carga
 Para la creación del balanceador de carga seguiremos los siguientes pasos:  
-1- Crearemos una maquina EC2 nueva, esta no tendra ninguna configuracion adicional en la creacion simplemente deberemos abrir el puerto 80 desde cualquier lugar y el puerto 22 temporalmente hasta que terminemosla configuracion  
+1- Crearemos una máquina EC2 nueva, esta no tendrá ninguna configuración adicional en la creación simplemente deberemos abrir el puerto 80 desde cualquier lugar y el puerto 22 temporalmente hasta que terminemos la configuración  
 
-2- Una vez creada nuestra maquina nos conectaremos a ella y ya en esta usaremos los siguentes comandos:
+2- Una vez creada nuestra máquina nos conectaremos a ella y ya en esta usaremos los siguientes comandos:
 - sudo apt update
 - sudo apt install apache2
 - sudo a2enmod proxy
@@ -46,7 +45,7 @@ Para la creación del balanceador de carga seguiremos los siguientes pasos:
 - sudo a2enmod lbmethod_byrequests
 
 3- Una vez instalado todo tendremos que modificar el archivo "/etc/apache2/sites-enabled/000-default.conf"
-en este añadiremos lo siguiente antes de la linea "</VirtualHost&gt;"
+en este añadiremos lo siguiente antes de la línea "</VirtualHost&gt;"
 ```
         ProxyPass /balancer-manager !
 
@@ -71,27 +70,27 @@ en este añadiremos lo siguiente antes de la linea "</VirtualHost&gt;"
        Allow from all
     </Location>
 ```
-4- Hecho todo esto solo faltaria reiniciar apache y nuestro balanceador estaria terminado para comprobarlo recargamos varias veces nuestra pagina web y luego añadiremos al final de la url /balancer-manager y podremos ver cuantas peticiones se han hecho a cada server web 
+4- Hecho todo esto solo faltaria reiniciar apache y nuestro balanceador estaría terminado para comprobarlo recargamos varias veces nuestra página web y luego añadiremos al final de la url /balancer-manager y podremos ver cuantas peticiones se han hecho a cada server web 
 
 ![captura](balancer.PNG)
 ## Creación de un cluster multi A-Z 
 
-Comenzaremos creando una base de datos con la siguiente configuracion:
-- Creacion estandar
+Comenzaremos creando una base de datos con la siguiente configuración:
+- Creación estándar
 - Motor MySQL
 - Plantillas: Producción
-- Version del motor: MySQL 8.0.28
+- Versión del motor: MySQL 8.0.28
 - Disponibilidad y durabilidad: Instancia de base de datos Multi-AZ (Esto crea una instancia de base de datos principal y una instancia de base de datos en espera en una zona de - disponibilidad diferente. Proporciona alta disponibilidad y redundancia de datos, pero la instancia de base de datos en espera no admite conexiones para cargas de trabajo de lectura)
 - Identificador de instancias de bases de datos: Cluster
 - Contraseña y usuario
-- Configuracion de la instancia: Clases con ráfagas (incluye clases t)
+- Configuración de la instancia: Clases con ráfagas (incluye clases t)
 - Almacenamiento asignado: 100GiB
 - Umbral de almacenamiento máximo: 200GiB
 - Acceso público: si
 
-Una vez creada la base de datos añadiremos una regla de entrada por el puerto 3306 que solo este abierto para conexiones que lleguen desde los servidores web pero esto lo haremos mas tarde ya que primeramente la dejaremos accesible desde todo el mundo para el siguiente paso.
+Una vez creada la base de datos añadiremos una regla de entrada por el puerto 3306 que solo esté abierto para conexiones que lleguen desde los servidores web pero esto lo haremos más tarde ya que primeramente la dejaremos accesible desde todo el mundo para el siguiente paso.
 
-Con la base de datos creada y configurada abriremos sesion desde cualquier gestor en nuestro caso heidiSQL y crearemos la base de datos necesaria para nuestra web la cual sera para gestionar las donaciones:
+Con la base de datos creada y configurada abriremos sesión desde cualquier gestor en nuestro caso heidiSQL y crearemos la base de datos necesaria para nuestra web la cual será para gestionar las donaciones:
 ```SQL
 CREATE DATABASE Cluster;
 USE Cluster;
@@ -102,7 +101,7 @@ donativo DECIMAL(8,2),
 tipomoneda CHAR(5) CHECK (tipomoneda IN ('Euro','Dolar')));
 ```
 
-Una vez creada la base de datos nos iremos de nuevo a una de nuestras maquinas con el server web, en nuestra pagina añadiremos un boton que nos redirija a un formulario y con los siguientes archivos php (debemos de haber instalado php previamente si no esto ficheros no funcionaran en nuestras maquinas) configuraremos la conexion con la base de datos:
+Una vez creada la base de datos nos iremos de nuevo a una de nuestras máquinas con el servidor web, en nuestra página añadiremos un botón que nos redirija a un formulario y con los siguientes archivos php (debemos de haber instalado php previamente si no esto ficheros no funcionaran en nuestras máquinas) configuraremos la conexión con la base de datos:
 
 - formulario.php
 ```php
@@ -203,13 +202,13 @@ echo "</div>";
 ?>
 ```
 
-Una vez terminado tendriamos que tener algo tal que asi:  
+Una vez terminado tendremos que tener algo tal que así:  
 
 ![captura](web.PNG)
 ![captura](form.PNG)
 ![captura](envio.PNG)
 
-Tras comprobar que todo funcione correctamente comenzaremos a securizar el despliegue para ello eliminaremos la regla de entrada de ssh de los grupos de seguridad, quitaremos el acceso publico de nuestra base de datos, cambiaremos la regla de entrada del puerto 3306 para que solo este abierto para conexiones que lleguen desde los servidores web y por ultimo cambiaremos el grupo de seguridad de las maquinas web para que solo el balanceador pueda acceder a ellas una vez hecho esto habremos terminado con el despliegue y con todo esto tendremos las siguientes ventajas:
+Tras comprobar que todo funcione correctamente comenzaremos a securizar el despliegue para ello eliminaremos la regla de entrada de ssh de los grupos de seguridad, quitaremos el acceso público de nuestra base de datos, cambiaremos la regla de entrada del puerto 3306 para que solo esté abierto para conexiones que lleguen desde los servidores web y por último cambiaremos el grupo de seguridad de las maquinas web para que solo el balanceador pueda acceder a ellas una vez hecho esto habremos terminado con el despliegue y con todo esto tendremos las siguientes ventajas:
 
 - Escalabilidad: La combinación de EC2 y EFS permite escalar horizontalmente el sistema agregando más máquinas EC2 sin necesidad de reconfigurar el almacenamiento.
 
