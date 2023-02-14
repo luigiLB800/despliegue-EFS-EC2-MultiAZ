@@ -3,7 +3,7 @@ En este documento técnico, se describirá el proceso de despliegue de una arqui
 
 Arquitectura:
 
-La arquitectura de EFS-EC2-MultiAZ en AWS está diseñada para proporcionar un almacenamiento compartido altamente disponible y escalable para instancias EC2 en múltiples zonas de disponibilidad (AZ) de AWS. La siguiente imagen ilustra la arquitectura básica:
+La arquitectura de EFS-EC2-MultiAZ en AWS está diseñada para proporcionar un almacenamiento compartido altamente disponible y escalable para instancias EC2 en múltiples zonas de disponibilidad (AZ) de AWS. La siguiente imagen ilustra la arquitectura básica:  
 
 ![Imagen](despli.PNG)
 
