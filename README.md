@@ -11,7 +11,8 @@ La arquitectura de EFS-EC2-MultiAZ en AWS está diseñada para proporcionar un a
 
 1- Crearemos el grupo de seguridad de las máquinas ec2, en estas tendremos que abrir los puertos para http y ssh para todo el mundo (posteriormente se explicara cómo securizar el despliegue). Posteriormente crearemos el grupo de seguridad para el sistema efs, en este abriremos el puerto para nfs pero solo para el grupo de seguridad antes creado
 
-2- A continuación procedemos a lanzar las instancias ec2, lanzaremos dos 3 instancias con la siguiente configuración: como sistema operativo usaremos amazon linux, par de claves vokey, asignaremos una subred para cada máquina por ejemplo la a y la b, seleccionamos el grupo de seguridad antes creado y por último pondremos lo siguiente en user data:
+2- A continuación procedemos a lanzar las instancias ec2, lanzaremos dos 3 instancias con la siguiente configuración: como sistema operativo usaremos amazon linux, par de claves vokey, asignaremos una subred para cada máquina por ejemplo la a y la b, seleccionamos el grupo de seguridad antes creado y por último pondremos lo siguiente en user data:  
+
 ![captura](userdata.PNG)
 
 3- Ahora crearemos el sistema EFS para ello le pondremos un nombre y usaremos la VPC por defecto y la "storage class" standard. Una vez se haya creado nuestro sistema EFS cambiaremos los grupos de que vendrán asignados por defecto por el que creamos en el primer paso y ya terminamos con este apartado
